@@ -8,39 +8,19 @@ class CombatResolver {
     // Calculate totals for player 1
     int p1Damage = 0, p1Shield = 0, p1Heal = 0;
     for (var card in player1.selectedCards) {
-      switch (card.type) {
-        case CardType.damage:
-          p1Damage += card.value;
-          break;
-        case CardType.shield:
-          p1Shield += card.value;
-          break;
-        case CardType.heal:
-          p1Heal += card.value;
-          break;
-        case CardType.wild:
-        // Wild card logic can be implemented here
-          break;
-      }
+      p1Damage += card.attack;
+      p1Shield += card.defense;
+      p1Heal += card.heal;
+      card.applyEffect(player1, player2);
     }
 
     // Calculate totals for player 2
     int p2Damage = 0, p2Shield = 0, p2Heal = 0;
     for (var card in player2.selectedCards) {
-      switch (card.type) {
-        case CardType.damage:
-          p2Damage += card.value;
-          break;
-        case CardType.shield:
-          p2Shield += card.value;
-          break;
-        case CardType.heal:
-          p2Heal += card.value;
-          break;
-        case CardType.wild:
-        // Wild card logic can be implemented here
-          break;
-      }
+      p2Damage += card.attack;
+      p2Shield += card.defense;
+      p2Heal += card.heal;
+      card.applyEffect(player2, player1);
     }
 
     // Apply shields to reduce damage

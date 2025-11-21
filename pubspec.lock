@@ -58,7 +58,7 @@ packages:
     source: hosted
     version: "1.3.3"
   flame:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: flame
       sha256: "3725f1ab4ca07f77955c2b1c21d02906646ec0be95f7bc141854a529704fda9d"
