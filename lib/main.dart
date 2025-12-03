@@ -10,20 +10,35 @@ import 'package:flutter/widgets.dart';
 
 import 'package:flutter/material.dart';
 import 'ui/game_screen.dart';
-import 'game_logic/game_engine.dart';
+import 'audio/audio_controller.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  //Create & initialize audio controller
+  final audioController = AudioController();
+  try { // Web version does not support soloud, so try catch to prevent crashing
+    await audioController.initialize();
+  } catch (e) {
+    debugPrint("Audio initialize failed, continuing without sound. $e");
+  }
+
+
+  //Create game engine
   final engine = GameEngine();
-
   engine.initialize(player1Name: 'Alice', player2Name: 'Bob');
 
-  runApp(CardBattleApp(engine: engine));
+  runApp(CardBattleApp(
+    engine: engine,
+    audio: audioController,
+  ));
 }
 
 class CardBattleApp extends StatelessWidget {
   final GameEngine engine;
+  final AudioController audio;
 
-  const CardBattleApp({super.key, required this.engine});
+  const CardBattleApp({super.key, required this.engine, required this.audio});
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +46,7 @@ class CardBattleApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Card Battle Game',
       theme: ThemeData.dark(),
-      home: GameScreen(engine: engine),
+      home: GameScreen(engine: engine, audio: audio),
     );
   }
 }

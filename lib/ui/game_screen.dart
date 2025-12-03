@@ -1,3 +1,4 @@
+import 'package:card_game/audio/audio_controller.dart';
 import 'package:flutter/material.dart';
 import '../game_logic/game_engine.dart';
 import 'widgets/player_area.dart';
@@ -7,8 +8,9 @@ import 'widgets/action_buttons.dart';
 
 class GameScreen extends StatefulWidget {
   final GameEngine engine;
+  final AudioController audio;
 
-  const GameScreen({super.key, required this.engine});
+  const GameScreen({super.key, required this.engine, required this.audio});
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -44,7 +46,7 @@ class _GameScreenState extends State<GameScreen> {
             HandView(player: player, engine: engine),
 
             /// CONFIRM + RESET
-            ActionButtons(engine: engine),
+            ActionButtons(engine: engine, audio: widget.audio),
           ],
         ),
       ),
