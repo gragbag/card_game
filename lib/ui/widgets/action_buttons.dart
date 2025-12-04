@@ -5,24 +5,43 @@ import 'package:card_game/audio/audio_controller.dart';
 class ActionButtons extends StatelessWidget {
   final GameEngine engine;
   final AudioController audio;
+  final double scale;
 
-  const ActionButtons({super.key, required this.engine, required this.audio});
+  const ActionButtons({
+    super.key,
+    required this.engine,
+    required this.audio,
+    required this.scale,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8),
+      padding: EdgeInsets.all(8 * scale),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          ElevatedButton(
-            onPressed: () { engine.confirmSelection('player1');
-            audio.playSound('assets/sounds/confirm_button.mp3');},
-            child: const Text("Confirm"),
+          SizedBox(
+            width: 120 * scale,
+            height: 45 * scale,
+            child: ElevatedButton(
+              onPressed: () {
+                engine.confirmSelection('player1');
+                audio.playSound('assets/sounds/confirm_button.mp3');
+              },
+              child: Text("Confirm", style: TextStyle(fontSize: 16 * scale)),
+            ),
           ),
-          ElevatedButton(
-            onPressed: () { engine.reset();
-            audio.playSound('assets/sounds/reset_card.mp3');},
-            child: const Text("Reset"),
+          SizedBox(
+            width: 120 * scale,
+            height: 45 * scale,
+            child: ElevatedButton(
+              onPressed: () {
+                engine.reset();
+                audio.playSound('assets/sounds/reset_card.mp3');
+              },
+              child: Text("Reset", style: TextStyle(fontSize: 16 * scale)),
+            ),
           ),
         ],
       ),

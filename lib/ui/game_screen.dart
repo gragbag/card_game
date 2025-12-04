@@ -18,7 +18,32 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   @override
+  void initState() {
+    super.initState();
+    widget.engine.addListener(_refresh);
+  }
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    widget.engine.removeListener(_refresh);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final shortestSide = size.shortestSide;
+
+    // Scale relative to phone vs desktop
+    final scale = (shortestSide / 500).clamp(
+      0.6,
+      1.1,
+    ); // Tune denominator until it looks good
+
     final engine = widget.engine;
 
     final player = engine.getPlayer('player1');
@@ -27,27 +52,26 @@ class _GameScreenState extends State<GameScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
       body: SafeArea(
-        child: Column(
-          children: [
-            /// Opponent area (top)
-            PlayerArea(player: opponent, isOpponent: true, engine: engine),
+        child: Padding(
+          padding: EdgeInsets.only(top: 36 * scale),
+          child: Column(
+            children: [
+              PlayerArea(
+                player: opponent,
+                isOpponent: true,
+                engine: engine,
+                scale: scale,
+              ),
+              SizedBox(height: 10 * scale),
 
-            const SizedBox(height: 10),
+              GameBoard(engine: engine, scale: scale),
+              SizedBox(height: 10 * scale),
 
-            /// Central board (SLOTS)
-            GameBoard(engine: engine),
-
-            const SizedBox(height: 10),
-
-            /// Player area (below slots)
-            PlayerArea(player: player, engine: engine),
-
-            /// Player hand (BOTTOM)
-            HandView(player: player, engine: engine),
-
-            /// CONFIRM + RESET
-            ActionButtons(engine: engine, audio: widget.audio),
-          ],
+              PlayerArea(player: player, engine: engine, scale: scale),
+              HandView(player: player, engine: engine, scale: scale),
+              ActionButtons(engine: engine, audio: widget.audio, scale: scale),
+            ],
+          ),
         ),
       ),
     );

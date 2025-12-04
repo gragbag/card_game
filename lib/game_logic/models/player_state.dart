@@ -16,9 +16,9 @@ class PlayerState {
     this.health = 30,
     this.maxHealth = 30,
     required this.deck,
-  })  : hand = [],
-        discardPile = [],
-        selectedCards = [];
+  }) : hand = [],
+       discardPile = [],
+       selectedCards = [];
 
   bool get isAlive => health > 0;
   bool get canDrawCards => deck.isNotEmpty;
@@ -38,5 +38,6 @@ class PlayerState {
   };
 
   @override
-  String toString() => 'Player($name, HP: $health/$maxHealth, Hand: ${hand.length}, Deck: ${deck.length})';
+  String toString() =>
+      'Player($name, HP: $health/$maxHealth, Hand: ${hand.length}, Deck: ${deck.length})';
 }

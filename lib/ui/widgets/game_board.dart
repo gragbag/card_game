@@ -4,8 +4,9 @@ import 'field_slots.dart';
 
 class GameBoard extends StatelessWidget {
   final GameEngine engine;
+  final double scale;
 
-  const GameBoard({super.key, required this.engine});
+  const GameBoard({super.key, required this.engine, required this.scale});
 
   @override
   Widget build(BuildContext context) {
@@ -15,12 +16,17 @@ class GameBoard extends StatelessWidget {
     return Column(
       children: [
         // Opponent slots (view only)
-        FieldSlots(player: opponent, engine: engine, isOpponent: true),
+        FieldSlots(
+          player: opponent,
+          engine: engine,
+          isOpponent: true,
+          scale: scale,
+        ),
 
-        const SizedBox(height: 20),
+        SizedBox(height: 20 * scale),
 
         // Your slots (interactive)
-        FieldSlots(player: player, engine: engine),
+        FieldSlots(player: player, engine: engine, scale: scale),
       ],
     );
   }
