@@ -1,5 +1,6 @@
 import '../enums/card_type.dart';
 import 'player_state.dart';
+import 'dart:math';
 
 class Card {
   final String id;
@@ -19,27 +20,19 @@ class Card {
     this.heal = 0,
   });
 
-  /// Optional: special effect for wild cards or future expansion
+
   void applyEffect(PlayerState owner, PlayerState opponent) {
     if (type == CardType.wild) {
-      // Example: random effect
-      int choice =
-          (0 + (3 * (DateTime.now().millisecondsSinceEpoch % 1000) / 1000))
-              .floor();
-      switch (choice) {
-        case 0:
-          owner.health = (owner.health + 3).clamp(0, owner.maxHealth);
-          break;
-        case 1:
-          opponent.health = (opponent.health - 3).clamp(0, opponent.maxHealth);
-          break;
-        case 2:
-          // Give small shield
-          // Could implement a temp shield field later
-          break;
-      }
+      // 8~15 Random damage
+      final rand = Random();
+      int damage = 8 + rand.nextInt(8);
+
+      opponent.health = (opponent.health - damage).clamp(0, opponent.maxHealth);
+
+      print("Wild card dealt $damage damage!");
     }
   }
+
 
   Map<String, dynamic> toJson() => {
     'id': id,
