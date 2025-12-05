@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'dart:math';
 
 import 'models/game_state.dart';
 import 'models/player_state.dart';
@@ -42,7 +43,18 @@ class GameEngine extends ChangeNotifier {
     state = GameState(player1: player1, player2: player2);
 
     // Start first turn
-    startTurn();
+    startGame();
+    notifyListeners();
+  }
+
+  void startGame() {
+    state.currentPhase = GamePhase.draw;
+    CardManager.drawHand(state.player1);
+    CardManager.drawHand(state.player2);
+    state.currentPhase = GamePhase.select;
+    state.player1Ready = false;
+    state.player2Ready = false;
+
     notifyListeners();
   }
 
@@ -117,11 +129,18 @@ class GameEngine extends ChangeNotifier {
       state.player2Ready = true;
     }
 
+    // Trigger NPC turn automatically
+    if (!state.player2Ready) {
+      _playNpcTurn();
+    }
+
     notifyListeners();
 
     // If both players ready, proceed to reveal/resolve
     if (state.bothPlayersReady) {
-      revealAndResolve();
+      Future.delayed(const Duration(seconds: 2), () {
+        revealAndResolve();
+      });
     }
 
     return true;
@@ -152,6 +171,31 @@ class GameEngine extends ChangeNotifier {
       state.currentTurn++;
       startTurn();
     }
+  }
+
+  void _playNpcTurn() {
+    final npc = state.player2;
+    final random = Random();
+
+    // Clear previous selections
+    npc.selectedCards.clear();
+
+    // Shuffle hand to randomize selection
+    final handCopy = List.of(npc.hand);
+    handCopy.shuffle(random);
+
+    // Pick up to 3 cards to play
+    final numToPlay = min(3, handCopy.length);
+    for (int i = 0; i < numToPlay; i++) {
+      final card = handCopy[i];
+      npc.selectedCards.add(card);
+      npc.hand.removeWhere((c) => c.id == card.id);
+    }
+
+    // Mark NPC ready
+    state.player2Ready = true;
+
+    notifyListeners();
   }
 
   /// Get current game state (for UI)

@@ -3,9 +3,17 @@ import '../models/card.dart';
 
 class CardManager {
   /// Draw cards until player has 5 in hand
-  static void drawCards(PlayerState player) {
+  static void drawHand(PlayerState player) {
     while (player.hand.length < 5 && player.deck.isNotEmpty) {
       player.hand.add(player.deck.removeAt(0));
+    }
+  }
+
+  static void drawCards(PlayerState player) {
+    for (int i = 0; i < 2; i++) {
+      if (player.deck.isNotEmpty) {
+        player.hand.add(player.deck.removeAt(0));
+      }
     }
   }
 

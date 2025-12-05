@@ -1,3 +1,4 @@
+import 'package:card_game/game_logic/services/combat_resolver.dart';
 import 'package:flutter/material.dart';
 import '../../game_logic/game_engine.dart';
 import 'package:card_game/audio/audio_controller.dart';

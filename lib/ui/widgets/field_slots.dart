@@ -80,7 +80,15 @@ class _FieldSlotsState extends State<FieldSlots> {
                               fontSize: 14 * scale,
                             ),
                           )
-                        : _placedCardView(placedCard, scale),
+                        : isOpponent
+                        ? CardWidget(
+                            card: placedCard,
+                            scale: scale,
+                          ) // just show
+                        : _placedCardView(
+                            placedCard,
+                            scale,
+                          ), // draggable for player
                   ),
                 );
               },
