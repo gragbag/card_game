@@ -16,6 +16,8 @@ import 'services/combat_resolver.dart';
 class GameEngine extends ChangeNotifier {
   late GameState state;
 
+  String _firstPlacerId = 'player1';
+
   /// Initialize a new game
   void initialize({
     String player1Name = 'Player 1',
@@ -44,6 +46,9 @@ class GameEngine extends ChangeNotifier {
     // Initialize game state
     state = GameState(player1: player1, player2: player2);
 
+    // First game: player1 places first
+    _firstPlacerId = 'player1';
+
     // Start first turn
     startGame();
     notifyListeners();
@@ -62,12 +67,21 @@ class GameEngine extends ChangeNotifier {
 
   /// Start a new turn (Draw Phase)
   void startTurn() {
+    _firstPlacerId = _firstPlacerId == 'player1' ? 'player2' : 'player1';
+
     state.currentPhase = GamePhase.draw;
     CardManager.drawCards(state.player1);
     CardManager.drawCards(state.player2);
     state.currentPhase = GamePhase.select;
     state.player1Ready = false;
     state.player2Ready = false;
+
+    // If NPC is supposed to place first this turn,
+    // let them pick and place their cards *now*.
+    if (_firstPlacerId == 'player2') {
+      _playNpcTurn(); // NPC fills their lanes
+      state.player2Ready = true;
+    }
 
     notifyListeners();
   }
@@ -122,18 +136,20 @@ class GameEngine extends ChangeNotifier {
       state.player2Ready = true;
     }
 
-    // Trigger NPC turn automatically
-    if (!state.player2Ready) {
+    if (_firstPlacerId == 'player1' && !state.player2Ready) {
       _playNpcTurn();
+      state.player2Ready = true;
     }
-
-    notifyListeners();
 
     // If both players ready, proceed to reveal/resolve
     if (state.bothPlayersReady) {
+      state.currentPhase = GamePhase.reveal;
+      notifyListeners();
       Future.delayed(const Duration(seconds: 2), () {
         revealAndResolve();
       });
+    } else {
+      notifyListeners();
     }
 
     return true;
@@ -173,13 +189,19 @@ class GameEngine extends ChangeNotifier {
     // Make sure field is clear at the start of NPC selection
     CardManager.clearFieldToHand(npc);
 
-    // Decide which cards to play
+    // Copy + shuffle hand so we don't mutate while iterating
     final handCopy = List<Card>.from(npc.hand)..shuffle(random);
 
-    // We have exactly 3 lanes
+    // All lanes, shuffled, so lane choice is random too
     final lanes = List<Lane>.from(Lane.values)..shuffle(random);
 
-    final numToPlay = min(handCopy.length, lanes.length);
+    // Max cards NPC *could* play this turn
+    final maxPlayable = min(3, min(handCopy.length, lanes.length));
+
+    final numToPlay = maxPlayable == 0
+        ? 0
+        : random.nextInt(maxPlayable) + 1; // 0..maxPlayable
+
     for (int i = 0; i < numToPlay; i++) {
       final card = handCopy[i];
       final lane = lanes[i];
