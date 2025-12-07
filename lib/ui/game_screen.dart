@@ -5,6 +5,8 @@ import 'widgets/player_area.dart';
 import 'widgets/hand_view.dart';
 import 'widgets/game_board.dart';
 import 'widgets/action_buttons.dart';
+import '../game_logic/enums/game_phase.dart';
+import 'game_over_screen.dart';
 
 class GameScreen extends StatefulWidget {
   final GameEngine engine;
@@ -45,6 +47,14 @@ class _GameScreenState extends State<GameScreen> {
     ); // Tune denominator until it looks good
 
     final engine = widget.engine;
+
+    // if the game is over, show the GameOverScreen instead of the board
+    if (engine.state.currentPhase == GamePhase.gameOver) {
+      return GameOverScreen(
+        engine: engine,
+        audio: widget.audio,
+      );
+    }
 
     final player = engine.getPlayer('player1');
     final opponent = engine.getPlayer('player2');

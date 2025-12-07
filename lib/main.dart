@@ -11,6 +11,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'ui/game_screen.dart';
 import 'audio/audio_controller.dart';
+import 'ui/main_menu.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,7 +27,8 @@ void main() async {
 
   //Create game engine
   final engine = GameEngine();
-  engine.initialize(player1Name: 'Alice', player2Name: 'Bob');
+  //main menu will initialize game engine instead
+  // engine.initialize(player1Name: 'Alice', player2Name: 'Bob');
 
   runApp(CardBattleApp(
     engine: engine,
@@ -46,7 +48,7 @@ class CardBattleApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Card Battle Game',
       theme: ThemeData.dark(),
-      home: GameScreen(engine: engine, audio: audio),
+      home: MainMenu(engine: engine, audio: audio),
     );
   }
 }
