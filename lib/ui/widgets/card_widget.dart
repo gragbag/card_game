@@ -77,6 +77,7 @@ class CardWidget extends StatelessWidget {
       textAlign: TextAlign.center,
       maxLines: allowTwoLines ? 2 : 1,
       minFontSize: 8 * scale,
+      stepGranularity: 0.1 * scale,
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
         fontSize: 14 * scale,
