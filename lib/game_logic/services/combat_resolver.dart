@@ -2,16 +2,55 @@ import 'dart:math';
 import 'package:card_game/game_logic/enums/lane_column.dart' show Lane;
 
 import '../models/player_state.dart';
+import '../models/game_state.dart';
 import '../models/round_result.dart';
+import '../enums/lane_column.dart';
+import '../card_library/card_effects.dart';
 
 class CombatResolver {
-  static RoundResult resolveRound(PlayerState player1, PlayerState player2) {
+  static RoundResult resolveRound(
+    PlayerState player1,
+    PlayerState player2,
+    GameState game,
+  ) {
     int p1DamageTaken = 0, p2DamageTaken = 0;
     int p1Healed = 0, p2Healed = 0;
 
     for (final lane in Lane.values) {
-      final p1Card = player1.field.cardInLane(lane);
-      final p2Card = player2.field.cardInLane(lane);
+      var p1Card = player1.field.cardInLane(lane);
+      var p2Card = player2.field.cardInLane(lane);
+
+      // 1) Run resolve effects first
+      if (p1Card != null) {
+        final eff1 = CardEffects.forCard(p1Card);
+        eff1?.call(
+          CardEffectContext(
+            game: game,
+            owner: player1,
+            opponent: player2,
+            lane: lane,
+            card: p1Card,
+          ),
+        );
+
+        // effect might have destroyed/moved the card
+        p1Card = player1.field.cardInLane(lane);
+      }
+
+      if (p2Card != null) {
+        final eff2 = CardEffects.forCard(p2Card);
+        eff2?.call(
+          CardEffectContext(
+            game: game,
+            owner: player2,
+            opponent: player1,
+            lane: lane,
+            card: p2Card,
+          ),
+        );
+
+        p2Card = player2.field.cardInLane(lane);
+      }
 
       if (p1Card != null && p2Card != null) {
         // Card-vs-card combat in this lane
@@ -44,7 +83,10 @@ class CombatResolver {
     player2.health -= p2DamageTaken;
 
     player1.health += p1Healed;
+    player1.health = min(player1.health, player1.maxHealth);
+
     player2.health += p2Healed;
+    player2.health = min(player2.health, player2.maxHealth);
 
     // Check for game over
     bool isGameOver = !player1.isAlive || !player2.isAlive;

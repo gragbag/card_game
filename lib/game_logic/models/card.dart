@@ -7,9 +7,15 @@ class Card {
   final CardType type;
   final String name;
 
-  final int attack; // for damage cards
-  final int defense; // for shield cards
-  final int heal; // for heal cards
+  int attack; // for damage cards
+  int defense; // for shield cards
+  int heal; // for heal cards
+
+  /// Optional identifier for a special effect in CardEffects.
+  final String? effectKey;
+
+  /// Optional text shown in UI.
+  final String? description;
 
   Card({
     required this.id,
@@ -18,8 +24,9 @@ class Card {
     this.attack = 0,
     this.defense = 0,
     this.heal = 0,
+    this.effectKey,
+    this.description,
   });
-
 
   void applyEffect(PlayerState owner, PlayerState opponent) {
     if (type == CardType.wild) {
@@ -32,7 +39,6 @@ class Card {
       print("Wild card dealt $damage damage!");
     }
   }
-
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -50,6 +56,8 @@ class Card {
     attack: json['attack'] ?? 0,
     defense: json['defense'] ?? 0,
     heal: json['heal'] ?? 0,
+    effectKey: json['effectKey'],
+    description: json['description'],
   );
 
   @override

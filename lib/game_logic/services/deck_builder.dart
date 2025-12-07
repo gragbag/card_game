@@ -1,60 +1,72 @@
-import 'dart:math';
 import '../models/card.dart';
-import '../enums/card_type.dart';
+import '../card_library/card_library.dart';
 
 class DeckBuilder {
-  static List<Card> createStandardDeck() {
+  static List<Card> buildPlayerDeck(String ownerId) {
     List<Card> cards = [];
-    int id = 0;
+    var idCounter = 0;
 
-    // 15 Damage cards (values 6-10)
-    for (int i = 0; i < 15; i++) {
-      cards.add(
-        Card(
-          id: 'card_${id++}',
-          type: CardType.damage,
-          name: 'Attack',
-          attack: 6 + Random().nextInt(5),
-        ),
-      );
+    void addCopies(String key, int copies) {
+      final bp = CardLibrary.byKey(key);
+      for (int i = 0; i < copies; i++) {
+        cards.add(bp.toCard('${ownerId}_${key}_$idCounter'));
+        idCounter++;
+      }
     }
 
-    // 15 Shield cards (values 2-5)
-    for (int i = 0; i < 15; i++) {
-      cards.add(
-        Card(
-          id: 'card_${id++}',
-          type: CardType.shield,
-          name: 'Shield',
-          defense: 2 + Random().nextInt(4),
-        ),
-      );
-    }
+    // ---- Choose what goes into a deck ----
+    // You can tweak these numbers however you want.
 
-    // 8 Heal cards (values 2-4)
-    for (int i = 0; i < 8; i++) {
-      cards.add(
-        Card(
-          id: 'card_${id++}',
-          type: CardType.heal,
-          name: 'Heal',
-          heal: 2 + Random().nextInt(3),
-        ),
-      );
-    }
+    // -------------------
+    // ATTACK (10 cards)
+    // -------------------
+    addCopies('quick_strike', 3);
+    addCopies('heavy_strike', 2);
+    addCopies('berserker', 1);
+    addCopies('paladin', 1);
+    addCopies('lifesteal_blade', 1);
+    addCopies('blood_pact', 1);
+    addCopies('storm_archer', 1);
 
-    // 2 Wild cards
-    for (int i = 0; i < 2; i++) {
-      cards.add(Card(id: 'card_${id++}', type: CardType.wild, name: 'Wild'));
-    }
+    // -------------------
+    // DEFENSE (6 cards)
+    // -------------------
+    addCopies('guardian', 2);
+    addCopies('shield_wall', 1);
+    addCopies('thorned_guardian', 1);
+    addCopies('fortify', 1);
+    addCopies('shield_channeler', 1);
 
+    // -------------------
+    // HEALING (5 cards)
+    // -------------------
+    addCopies('healer', 2);
+    addCopies('battle_priest', 2);
+    addCopies('holy_beacon', 1);
+
+    // -------------------
+    // UTILITY / BUFFS (4 cards)
+    // -------------------
+    addCopies('war_banner', 2);
+    addCopies('rallying_cry', 1);
+    addCopies('overcharger', 1);
+
+    // -------------------
+    // SPECIAL / REMOVAL (5 cards)
+    // -------------------
+    addCopies('assassin', 2);
+    addCopies('fireball', 1);
+    addCopies('chain_lightning', 1);
+    addCopies('healing_seal', 1);
+
+    // Optionally, assert deck size if you care (e.g. 30 or 40 cards)
+    // if (cards.length != 30) {
+    //   throw ArgumentError(
+    //     'Deck must contain exactly 30 cards (current: ${cards.length}).',
+    //   );
+    // }
+
+    cards.shuffle();
     return cards;
-  }
-
-  static List<List<Card>> splitDeck(List<Card> deck) {
-    if (deck.length != 40) {
-      throw ArgumentError('Deck must contain exactly 40 cards');
-    }
-    return [deck.sublist(0, 20), deck.sublist(20, 40)];
   }
 }

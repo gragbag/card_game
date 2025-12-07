@@ -23,24 +23,17 @@ class GameEngine extends ChangeNotifier {
     String player1Name = 'Player 1',
     String player2Name = 'Player 2',
   }) {
-    // Create and shuffle deck
-    List<Card> fullDeck = DeckBuilder.createStandardDeck();
-    fullDeck.shuffle();
-
-    // Split deck between players
-    var decks = DeckBuilder.splitDeck(fullDeck);
-
     // Create player states
     final player1 = PlayerState(
       id: 'player1',
       name: player1Name,
-      deck: decks[0],
+      deck: DeckBuilder.buildPlayerDeck('player1'),
     );
 
     final player2 = PlayerState(
       id: 'player2',
       name: player2Name,
-      deck: decks[1],
+      deck: DeckBuilder.buildPlayerDeck('player2'),
     );
 
     // Initialize game state
@@ -164,6 +157,7 @@ class GameEngine extends ChangeNotifier {
     RoundResult result = CombatResolver.resolveRound(
       state.player1,
       state.player2,
+      state,
     );
     state.lastRoundResult = result;
 

@@ -1,6 +1,1 @@
-enum CardType {
-  damage,
-  shield,
-  heal,
-  wild
-}
+enum CardType { damage, shield, heal, wild }

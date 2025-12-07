@@ -17,8 +17,8 @@ class PlayerState {
   PlayerState({
     required this.id,
     required this.name,
-    this.health = 30,
-    this.maxHealth = 30,
+    this.health = 25,
+    this.maxHealth = 25,
     List<Card>? hand,
     List<Card>? deck,
     List<Card>? discardPile,

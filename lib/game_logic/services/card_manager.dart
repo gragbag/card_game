@@ -5,7 +5,7 @@ import '../enums/lane_column.dart';
 
 class CardManager {
   static const int _startingHandSize = 5;
-  static const int _maxHandSize = 7;
+  static const int _maxHandSize = 9;
 
   /// Draw cards until player has 5 in hand
   static void drawHand(PlayerState player) {

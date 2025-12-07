@@ -1,9 +1,10 @@
 // field_slot.dart (new)
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Card;
+import '../../game_logic/enums/card_type.dart';
 import '../../game_logic/enums/game_phase.dart' show GamePhase;
 import '../../game_logic/game_engine.dart';
 import '../../game_logic/models/player_state.dart';
-import '../../game_logic/models/card.dart' as game_card;
+import '../../game_logic/models/card.dart';
 import '../../game_logic/enums/lane_column.dart';
 import 'card_widget.dart';
 
@@ -33,7 +34,7 @@ class FieldSlot extends StatelessWidget {
     // - if it's the opponent's slot during select phase → show face-down
     final hideCardFromPlayer = isOpponent && isSelectPhase;
 
-    return DragTarget<game_card.Card>(
+    return DragTarget<Card>(
       onWillAccept: (incoming) => !isOpponent && incoming != null,
       onAccept: (card) {
         engine.moveCardToLane(player.id, card, lane);
@@ -65,7 +66,7 @@ class FieldSlot extends StatelessWidget {
                   )
                 : hideCardFromPlayer
                 // Opponent face-down card
-                ? _buildCardBack(scale)
+                ? _buildCardBack(card, scale)
                 // Normal rendering (AI side face-up; your side draggable)
                 : isOpponent
                 ? CardWidget(card: card, scale: scale)
@@ -76,10 +77,10 @@ class FieldSlot extends StatelessWidget {
     );
   }
 
-  Widget _draggableCard(game_card.Card card, double scale) {
+  Widget _draggableCard(Card card, double scale) {
     if (isOpponent) return CardWidget(card: card, scale: scale);
 
-    return Draggable<game_card.Card>(
+    return Draggable<Card>(
       data: card,
       feedback: Material(
         color: Colors.transparent,
@@ -97,12 +98,26 @@ class FieldSlot extends StatelessWidget {
     );
   }
 
-  Widget _buildCardBack(double scale) {
+  Widget _buildCardBack(Card card, double scale) {
+    Color color;
+    switch (card.type) {
+      case CardType.damage:
+        color = Colors.redAccent;
+        break;
+      case CardType.shield:
+        color = Colors.blueAccent;
+        break;
+      case CardType.heal:
+        color = Colors.greenAccent;
+        break;
+      default:
+        color = Colors.grey;
+    }
     return Container(
       width: 80 * scale,
       height: 110 * scale,
       decoration: BoxDecoration(
-        color: Colors.blueGrey.shade800,
+        color: color.withOpacity(0.5),
         borderRadius: BorderRadius.circular(10 * scale),
         border: Border.all(color: Colors.white24),
       ),

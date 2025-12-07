@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart' hide Card;
 import '../../game_logic/models/card.dart';
 import '../../game_logic/enums/card_type.dart';
@@ -18,6 +19,15 @@ class CardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        _showCardDetails(context, card, scale);
+      },
+      child: _buildCardFront(),
+    );
+  }
+
+  Widget _buildCardFront() {
     return Container(
       width: 80 * scale,
       height: 110 * scale,
@@ -37,15 +47,8 @@ class CardWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            card.name,
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 14 * scale,
-            ),
-            textAlign: TextAlign.center,
-          ),
+          _buildName(scale),
+
           if (card.attack > 0)
             Text(
               'ATK: ${card.attack}',
@@ -63,6 +66,66 @@ class CardWidget extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+
+  Widget _buildName(double scale) {
+    final allowTwoLines = card.name.contains(' ');
+
+    return AutoSizeText(
+      card.name,
+      textAlign: TextAlign.center,
+      maxLines: allowTwoLines ? 2 : 1,
+      minFontSize: 8 * scale,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        fontSize: 14 * scale,
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  void _showCardDetails(BuildContext context, Card card, double scale) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.grey.shade900,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        final nameSize = 20 * scale;
+        final statSize = 14 * scale;
+        final descSize = 14 * scale;
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                card.name,
+                style: TextStyle(
+                  fontSize: nameSize,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 12),
+              Text(
+                'ATK: ${card.attack}   DEF: ${card.defense}   HEAL: ${card.heal}',
+                style: TextStyle(fontSize: statSize, color: Colors.white70),
+              ),
+              SizedBox(height: 16),
+              Text(
+                card.description ?? 'No special effect.',
+                style: TextStyle(fontSize: descSize, color: Colors.white),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
