@@ -27,7 +27,7 @@ class CardManager {
   /// Returns false if lane occupied or card not in hand.
   static bool playCardToLane(PlayerState player, String cardId, Lane lane) {
     // lane already occupied?
-    if (player.field.cardInLane(lane) != null) {
+    if (_cardInLane(player, lane) != null) {
       removeCardFromLane(player, lane);
     }
 
@@ -35,13 +35,13 @@ class CardManager {
     if (index == -1) return false;
 
     final card = player.hand.removeAt(index);
-    player.field.setCardInLane(lane, card);
+    _setCardInLane(player, lane, card);
     return true;
   }
 
   /// Remove the card in [lane] back to hand (or discard if hand is full).
   static bool removeCardFromLane(PlayerState player, Lane lane) {
-    final card = player.field.cardInLane(lane);
+    final card = _cardInLane(player, lane);
     if (card == null) return false;
 
     if (player.hand.length < _maxHandSize) {
@@ -50,34 +50,68 @@ class CardManager {
       player.discardPile.add(card);
     }
 
-    player.field.setCardInLane(lane, null);
+    _setCardInLane(player, lane, null);
     return true;
   }
 
   /// Discard everything currently on the field (used in cleanup).
   static void discardField(PlayerState player) {
     for (final lane in Lane.values) {
-      final card = player.field.cardInLane(lane);
+      final card = _cardInLane(player, lane);
       if (card != null) {
         player.discardPile.add(card);
-        player.field.setCardInLane(lane, null);
+        _setCardInLane(player, lane, null);
       }
     }
   }
 
   /// Clear field, returning cards to hand if possible, otherwise discard.
-  /// (If you still want a "cancel placement" behavior.)
   static void clearFieldToHand(PlayerState player) {
     for (final lane in Lane.values) {
-      final card = player.field.cardInLane(lane);
+      final card = _cardInLane(player, lane);
       if (card != null) {
         if (player.hand.length < _maxHandSize) {
           player.hand.add(card);
         } else {
           player.discardPile.add(card);
         }
-        player.field.setCardInLane(lane, null);
+        _setCardInLane(player, lane, null);
       }
+    }
+  }
+
+  static void swapLanes(PlayerState player, Lane from, Lane to) {
+    if (from == to) return;
+
+    final fromCard = _cardInLane(player, from);
+    final toCard = _cardInLane(player, to);
+
+    _setCardInLane(player, from, toCard);
+    _setCardInLane(player, to, fromCard);
+  }
+
+  static Card? _cardInLane(PlayerState player, Lane lane) {
+    switch (lane) {
+      case Lane.left:
+        return player.field.left;
+      case Lane.center:
+        return player.field.center;
+      case Lane.right:
+        return player.field.right;
+    }
+  }
+
+  static void _setCardInLane(PlayerState player, Lane lane, Card? card) {
+    switch (lane) {
+      case Lane.left:
+        player.field.left = card;
+        break;
+      case Lane.center:
+        player.field.center = card;
+        break;
+      case Lane.right:
+        player.field.right = card;
+        break;
     }
   }
 }

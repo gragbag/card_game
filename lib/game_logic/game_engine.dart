@@ -79,9 +79,31 @@ class GameEngine extends ChangeNotifier {
     notifyListeners();
   }
 
-  void moveCardToLane(String playerId, Card card, Lane lane) {
+  void moveCardToLane(String playerId, Card card, Lane targetLane) {
     final player = getPlayer(playerId);
-    CardManager.playCardToLane(player, card.id, lane);
+
+    // 1) Is this card currently on the field already?
+    Lane? currentLane;
+    for (final lane in Lane.values) {
+      final laneCard = player.field.cardInLane(lane);
+      if (laneCard != null && laneCard.id == card.id) {
+        currentLane = lane;
+        break;
+      }
+    }
+
+    // 2) If it’s on the field: swap lanes instead of treating it as a hand card
+    if (currentLane != null) {
+      if (currentLane == targetLane) return; // no-op
+
+      // Swap the two lane positions
+      CardManager.swapLanes(player, currentLane, targetLane);
+    } else {
+      // 3) Otherwise it's a hand card → use existing behavior:
+      //    play card from hand into lane, possibly replacing existing lane card.
+      CardManager.playCardToLane(player, card.id, targetLane);
+    }
+
     notifyListeners();
   }
 
