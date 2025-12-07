@@ -1,6 +1,6 @@
 import 'package:card_game/ui/widgets/card_widget.dart';
 import 'package:flutter/material.dart' hide Card;
-import '../../game_logic/models/card.dart' as game_card show Card;
+import '../../game_logic/models/card.dart' show Card;
 import '../../game_logic/models/player_state.dart';
 import '../../game_logic/game_engine.dart';
 
@@ -27,7 +27,7 @@ class _HandViewState extends State<HandView> {
     final scale = widget.scale;
 
     return Center(
-      child: DragTarget<game_card.Card>(
+      child: DragTarget<Card>(
         onWillAccept: (incoming) => incoming != null,
         onAcceptWithDetails: (details) {
           final card = details.data;
@@ -45,11 +45,9 @@ class _HandViewState extends State<HandView> {
               itemCount: widget.player.hand.length,
               itemBuilder: (context, index) {
                 final card = widget.player.hand[index];
-                final isSelected = widget.player.selectedCards.any(
-                  (c) => c?.id == card.id,
-                );
+                bool isSelected = _isCardInAnyLane(widget.player, card);
 
-                return Draggable<game_card.Card>(
+                return Draggable<Card>(
                   data: card,
                   feedback: Material(
                     color: Colors.transparent,
@@ -80,5 +78,11 @@ class _HandViewState extends State<HandView> {
         },
       ),
     );
+  }
+
+  bool _isCardInAnyLane(PlayerState player, Card card) {
+    return player.field.left?.id == card.id ||
+        player.field.center?.id == card.id ||
+        player.field.right?.id == card.id;
   }
 }

@@ -30,19 +30,4 @@ class GameState {
     if (!player1.isAlive) return 'player2';
     return 'player1';
   }
-
-  Map<String, dynamic> toJson() => {
-    'player1': player1.toJson(),
-    'player2': player2.toJson(),
-    'currentPhase': currentPhase.name,
-    'currentTurn': currentTurn,
-    'lastRoundResult': lastRoundResult?.toJson(),
-    'player1Ready': player1Ready,
-    'player2Ready': player2Ready,
-  };
-
-  @override
-  String toString() {
-    return 'GameState(Turn: $currentTurn, Phase: $currentPhase, P1: ${player1.health}HP, P2: ${player2.health}HP)';
-  }
 }

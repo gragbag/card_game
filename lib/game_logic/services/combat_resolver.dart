@@ -1,39 +1,50 @@
 import 'dart:math';
+import 'package:card_game/game_logic/enums/lane_column.dart' show Lane;
+
 import '../models/player_state.dart';
 import '../models/round_result.dart';
-import '../enums/card_type.dart';
 
 class CombatResolver {
   static RoundResult resolveRound(PlayerState player1, PlayerState player2) {
-    // Calculate totals for player 1
-    int p1Damage = 0, p1Shield = 0, p1Heal = 0;
-    for (var card in player1.selectedCards) {
-      p1Damage += card.attack;
-      p1Shield += card.defense;
-      p1Heal += card.heal;
-      card.applyEffect(player1, player2);
+    int p1DamageTaken = 0, p2DamageTaken = 0;
+    int p1Healed = 0, p2Healed = 0;
+
+    for (final lane in Lane.values) {
+      final p1Card = player1.field.cardInLane(lane);
+      final p2Card = player2.field.cardInLane(lane);
+
+      if (p1Card != null && p2Card != null) {
+        // Card-vs-card combat in this lane
+        // (You can add shields, effects, etc here later)
+        p1DamageTaken += max(0, p2Card.attack - p1Card.defense);
+        p2DamageTaken += max(0, p1Card.attack - p2Card.defense);
+
+        p1Card.applyEffect(player1, player2);
+        p2Card.applyEffect(player2, player1);
+      } else if (p1Card != null && p2Card == null) {
+        // Player 1 hits player 2 directly in this lane
+        p2DamageTaken += p1Card.attack;
+        p1Card.applyEffect(player1, player2);
+      } else if (p2Card != null && p1Card == null) {
+        // Player 2 hits player 1 directly in this lane
+        p1DamageTaken += p2Card.attack;
+        p2Card.applyEffect(player2, player1);
+      }
+
+      if (p1Card != null) {
+        p1Healed += p1Card.heal;
+      }
+
+      if (p2Card != null) {
+        p2Healed += p2Card.heal;
+      }
     }
 
-    // Calculate totals for player 2
-    int p2Damage = 0, p2Shield = 0, p2Heal = 0;
-    for (var card in player2.selectedCards) {
-      p2Damage += card.attack;
-      p2Shield += card.defense;
-      p2Heal += card.heal;
-      card.applyEffect(player2, player1);
-    }
+    player1.health -= p1DamageTaken;
+    player2.health -= p2DamageTaken;
 
-    // Apply shields to reduce damage
-    int p1DamageTaken = max(0, p2Damage - p1Shield);
-    int p2DamageTaken = max(0, p1Damage - p2Shield);
-
-    // Apply damage to health
-    player1.health = max(0, player1.health - p1DamageTaken);
-    player2.health = max(0, player2.health - p2DamageTaken);
-
-    // Apply healing (cannot exceed max HP)
-    player1.health = min(player1.maxHealth, player1.health + p1Heal);
-    player2.health = min(player2.maxHealth, player2.health + p2Heal);
+    player1.health += p1Healed;
+    player2.health += p2Healed;
 
     // Check for game over
     bool isGameOver = !player1.isAlive || !player2.isAlive;
@@ -49,16 +60,10 @@ class CombatResolver {
     }
 
     return RoundResult(
-      player1Damage: p1Damage,
-      player1Shield: p1Shield,
-      player1Heal: p1Heal,
-      player1DamageTaken: p1DamageTaken,
-      player1HealthAfter: player1.health,
-      player2Damage: p2Damage,
-      player2Shield: p2Shield,
-      player2Heal: p2Heal,
-      player2DamageTaken: p2DamageTaken,
-      player2HealthAfter: player2.health,
+      player1Damage: p2DamageTaken,
+      player2Damage: p1DamageTaken,
+      player1Healed: p1Healed,
+      player2Healed: p2Healed,
       isGameOver: isGameOver,
       winner: winner,
     );

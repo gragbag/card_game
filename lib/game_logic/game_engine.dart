@@ -1,3 +1,4 @@
+import 'package:card_game/game_logic/enums/lane_column.dart' show Lane;
 import 'package:flutter/foundation.dart';
 import 'dart:math';
 
@@ -6,6 +7,7 @@ import 'models/player_state.dart';
 import 'models/card.dart';
 import 'models/round_result.dart';
 import 'enums/game_phase.dart';
+import 'enums/lane_column.dart';
 import 'services/deck_builder.dart';
 import 'services/card_manager.dart';
 import 'services/combat_resolver.dart';
@@ -70,49 +72,40 @@ class GameEngine extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Player selects a card
-  bool selectCard(String playerId, String cardId) {
-    if (state.currentPhase != GamePhase.select) return false;
-
-    PlayerState player = playerId == 'player1' ? state.player1 : state.player2;
-    bool ok = CardManager.selectCard(player, cardId);
-    if (ok) notifyListeners();
-    return ok;
-  }
-
-  /// Player deselects a card
-  bool deselectCard(String playerId, String cardId) {
-    if (state.currentPhase != GamePhase.select) return false;
-
-    PlayerState player = playerId == 'player1' ? state.player1 : state.player2;
-    bool ok = CardManager.deselectCard(player, cardId);
-    if (ok) notifyListeners();
-    return ok;
-  }
-
-  /// Player manually moves a card from hand → field
-  void moveCardToField(String playerId, Card card) {
+  void moveCardToLane(String playerId, Card card, Lane lane) {
     final player = getPlayer(playerId);
-
-    player.hand.removeWhere((c) => c.id == card.id);
-    player.selectedCards.removeWhere((c) => c.id == card.id);
-    if (player.selectedCards.length < 3) {
-      player.selectedCards.add(card);
-    }
-
+    CardManager.playCardToLane(player, card.id, lane);
     notifyListeners();
+  }
+
+  bool removeCardFromLane(String playerId, Lane lane) {
+    if (state.currentPhase != GamePhase.select) return false;
+
+    final player = playerId == 'player1' ? state.player1 : state.player2;
+    final ok = CardManager.removeCardFromLane(player, lane);
+    if (ok) notifyListeners();
+    return ok;
   }
 
   void moveCardToHand(String playerId, Card card) {
-    final player = getPlayer(playerId);
-    // Remove from selected cards if it exists there
-    player.selectedCards.removeWhere((c) => c.id == card.id);
-    // Remove from hand to prevent duplicates
-    player.hand.removeWhere((c) => c.id == card.id);
-    // Add to hand
-    player.hand.add(card);
+    if (state.currentPhase != GamePhase.select) return;
 
-    notifyListeners();
+    final player = getPlayer(playerId);
+
+    // Find which lane this card is in
+    Lane? sourceLane;
+    for (final lane in Lane.values) {
+      final laneCard = player.field.cardInLane(lane);
+      if (laneCard?.id == card.id) {
+        sourceLane = lane;
+        break;
+      }
+    }
+
+    if (sourceLane != null) {
+      CardManager.removeCardFromLane(player, sourceLane);
+      notifyListeners();
+    }
   }
 
   /// Player confirms their selection
@@ -121,7 +114,7 @@ class GameEngine extends ChangeNotifier {
 
     PlayerState player = playerId == 'player1' ? state.player1 : state.player2;
 
-    if (player.selectedCards.isEmpty) return false;
+    // if (player.selectedCards.isEmpty) return false;
 
     if (playerId == 'player1') {
       state.player1Ready = true;
@@ -160,8 +153,8 @@ class GameEngine extends ChangeNotifier {
 
     // Cleanup
     state.currentPhase = GamePhase.cleanup;
-    CardManager.discardSelected(state.player1);
-    CardManager.discardSelected(state.player2);
+    CardManager.discardField(state.player1);
+    CardManager.discardField(state.player2);
 
     // Check for game over
     if (state.isGameOver) {
@@ -177,25 +170,23 @@ class GameEngine extends ChangeNotifier {
     final npc = state.player2;
     final random = Random();
 
-    // Clear previous selections
-    npc.selectedCards.clear();
+    // Make sure field is clear at the start of NPC selection
+    CardManager.clearFieldToHand(npc);
 
-    // Shuffle hand to randomize selection
-    final handCopy = List.of(npc.hand);
-    handCopy.shuffle(random);
+    // Decide which cards to play
+    final handCopy = List<Card>.from(npc.hand)..shuffle(random);
 
-    // Pick up to 3 cards to play
-    final numToPlay = min(3, handCopy.length);
+    // We have exactly 3 lanes
+    final lanes = List<Lane>.from(Lane.values)..shuffle(random);
+
+    final numToPlay = min(handCopy.length, lanes.length);
     for (int i = 0; i < numToPlay; i++) {
       final card = handCopy[i];
-      npc.selectedCards.add(card);
-      npc.hand.removeWhere((c) => c.id == card.id);
+      final lane = lanes[i];
+      CardManager.playCardToLane(npc, card.id, lane);
     }
 
-    // Mark NPC ready
     state.player2Ready = true;
-
-    notifyListeners();
   }
 
   /// Get current game state (for UI)
