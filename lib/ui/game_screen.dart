@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:card_game/audio/audio_controller.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../game_logic/game_engine.dart';
+import '../game_logic/multiplayer/online_game_room.dart';
 import 'widgets/player_area.dart';
 import 'widgets/hand_view.dart';
 import 'widgets/game_board.dart';
@@ -12,17 +16,75 @@ class GameScreen extends StatefulWidget {
   final GameEngine engine;
   final AudioController audio;
 
-  const GameScreen({super.key, required this.engine, required this.audio});
+  /// If not null, this game is an online game synced to this room.
+  final String? roomId;
+
+  /// Optional logical player id for this device: 'player1' or 'player2'
+  final String? localPlayerId;
+
+  const GameScreen({
+    super.key,
+    required this.engine,
+    required this.audio,
+    this.roomId,
+    this.localPlayerId,
+  });
 
   @override
   State<GameScreen> createState() => _GameScreenState();
 }
 
 class _GameScreenState extends State<GameScreen> {
+  late final GameEngine engine;
+
+  StreamSubscription<DocumentSnapshot>? _roomSub;
+  bool _applyingRemoteUpdate = false;
+
+  bool get _isOnline => widget.roomId != null;
+
   @override
   void initState() {
     super.initState();
     widget.engine.addListener(_refresh);
+
+    engine = widget.engine;
+
+    if (_isOnline) {
+      _setupOnlineSync();
+    }
+  }
+
+  void _setupOnlineSync() {
+    final roomId = widget.roomId!;
+    final roomRef = FirebaseFirestore.instance.collection('rooms').doc(roomId);
+
+    // 1) Listen for remote updates and apply them to the engine
+    _roomSub = roomRef.snapshots().listen((snapshot) {
+      if (!snapshot.exists) return;
+
+      final room = OnlineGameRoom.fromSnapshot(snapshot);
+
+      // Avoid triggering write → read → write loops
+      _applyingRemoteUpdate = true;
+      engine.loadFromState(room.gameState);
+      _applyingRemoteUpdate = false;
+    });
+
+    // 2) Whenever the engine changes locally, push the new state to Firestore
+    engine.addListener(_onEngineChanged);
+  }
+
+  void _onEngineChanged() {
+    if (!_isOnline || _applyingRemoteUpdate) return;
+
+    final roomId = widget.roomId!;
+    final roomRef = FirebaseFirestore.instance.collection('rooms').doc(roomId);
+
+    roomRef.update({
+      'gameState': engine.state.toJson(),
+      'updatedAt': FieldValue.serverTimestamp(),
+      // you could also update 'status' or 'currentPlayerId' here later
+    });
   }
 
   void _refresh() {
@@ -31,6 +93,7 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   void dispose() {
+    _roomSub?.cancel();
     widget.engine.removeListener(_refresh);
     super.dispose();
   }
@@ -50,14 +113,14 @@ class _GameScreenState extends State<GameScreen> {
 
     // if the game is over, show the GameOverScreen instead of the board
     if (engine.state.currentPhase == GamePhase.gameOver) {
-      return GameOverScreen(
-        engine: engine,
-        audio: widget.audio,
-      );
+      return GameOverScreen(engine: engine, audio: widget.audio);
     }
 
-    final player = engine.getPlayer('player1');
-    final opponent = engine.getPlayer('player2');
+    final localPlayerId = widget.localPlayerId ?? 'player1';
+    final player = engine.getPlayer(localPlayerId);
+    final opponent = engine.getPlayer(
+      localPlayerId == 'player1' ? 'player2' : 'player1',
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
@@ -74,12 +137,21 @@ class _GameScreenState extends State<GameScreen> {
               ),
               SizedBox(height: 10 * scale),
 
-              GameBoard(engine: engine, scale: scale),
+              GameBoard(
+                engine: engine,
+                scale: scale,
+                localPlayerId: localPlayerId,
+              ),
               SizedBox(height: 10 * scale),
 
               PlayerArea(player: player, engine: engine, scale: scale),
               HandView(player: player, engine: engine, scale: scale),
-              ActionButtons(engine: engine, audio: widget.audio, scale: scale),
+              ActionButtons(
+                engine: engine,
+                audio: widget.audio,
+                scale: scale,
+                localPlayerId: localPlayerId,
+              ),
             ],
           ),
         ),

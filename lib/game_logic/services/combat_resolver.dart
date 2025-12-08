@@ -57,17 +57,12 @@ class CombatResolver {
         // (You can add shields, effects, etc here later)
         p1DamageTaken += max(0, p2Card.attack - p1Card.defense);
         p2DamageTaken += max(0, p1Card.attack - p2Card.defense);
-
-        p1Card.applyEffect(player1, player2);
-        p2Card.applyEffect(player2, player1);
       } else if (p1Card != null && p2Card == null) {
         // Player 1 hits player 2 directly in this lane
         p2DamageTaken += p1Card.attack;
-        p1Card.applyEffect(player1, player2);
       } else if (p2Card != null && p1Card == null) {
         // Player 2 hits player 1 directly in this lane
         p1DamageTaken += p2Card.attack;
-        p2Card.applyEffect(player2, player1);
       }
 
       if (p1Card != null) {

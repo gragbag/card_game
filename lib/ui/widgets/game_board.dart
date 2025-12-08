@@ -8,12 +8,21 @@ class GameBoard extends StatelessWidget {
   final GameEngine engine;
   final double scale;
 
-  const GameBoard({super.key, required this.engine, required this.scale});
+  final String localPlayerId;
+
+  const GameBoard({
+    super.key,
+    required this.engine,
+    required this.scale,
+    this.localPlayerId = 'player1',
+  });
 
   @override
   Widget build(BuildContext context) {
-    final player = engine.getPlayer('player1');
-    final opponent = engine.getPlayer('player2');
+    final player = engine.getPlayer(localPlayerId);
+    final opponent = engine.getPlayer(
+      localPlayerId == 'player1' ? 'player2' : 'player1',
+    );
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 16 * scale),

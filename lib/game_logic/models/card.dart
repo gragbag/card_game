@@ -28,18 +28,6 @@ class Card {
     this.description,
   });
 
-  void applyEffect(PlayerState owner, PlayerState opponent) {
-    if (type == CardType.wild) {
-      // 8~15 Random damage
-      final rand = Random();
-      int damage = 8 + rand.nextInt(8);
-
-      opponent.health = (opponent.health - damage).clamp(0, opponent.maxHealth);
-
-      print("Wild card dealt $damage damage!");
-    }
-  }
-
   Map<String, dynamic> toJson() => {
     'id': id,
     'type': type.name,
@@ -47,6 +35,8 @@ class Card {
     'attack': attack,
     'defense': defense,
     'heal': heal,
+    'effectKey': effectKey,
+    'description': description,
   };
 
   factory Card.fromJson(Map<String, dynamic> json) => Card(

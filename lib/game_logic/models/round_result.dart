@@ -75,4 +75,26 @@ class RoundResult {
     required this.isGameOver,
     this.winner,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'player1Damage': player1Damage,
+      'player1Healed': player1Healed,
+      'player2Damage': player2Damage,
+      'player2Healed': player2Healed,
+      'isGameOver': isGameOver,
+      'winner': winner,
+    };
+  }
+
+  factory RoundResult.fromJson(Map<String, dynamic> json) {
+    return RoundResult(
+      player1Damage: json['player1Damage'] ?? 0,
+      player1Healed: json['player1Healed'] ?? 0,
+      player2Damage: json['player2Damage'] ?? 0,
+      player2Healed: json['player2Healed'] ?? 0,
+      isGameOver: json['isGameOver'] ?? false,
+      winner: json['winner'],
+    );
+  }
 }

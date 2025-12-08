@@ -14,15 +14,21 @@ import 'services/combat_resolver.dart';
 
 /// Main game engine - manages all game logic
 class GameEngine extends ChangeNotifier {
+  bool vsCpu;
   late GameState state;
 
-  String _firstPlacerId = 'player1';
+  GameEngine({this.vsCpu = true});
 
   /// Initialize a new game
   void initialize({
     String player1Name = 'Player 1',
     String player2Name = 'Player 2',
+    bool? vsCpuOverride,
   }) {
+    if (vsCpuOverride != null) {
+      vsCpu = vsCpuOverride;
+    }
+
     // Create player states
     final player1 = PlayerState(
       id: 'player1',
@@ -38,9 +44,6 @@ class GameEngine extends ChangeNotifier {
 
     // Initialize game state
     state = GameState(player1: player1, player2: player2);
-
-    // First game: player1 places first
-    _firstPlacerId = 'player1';
 
     // Start first turn
     startGame();
@@ -60,7 +63,10 @@ class GameEngine extends ChangeNotifier {
 
   /// Start a new turn (Draw Phase)
   void startTurn() {
-    _firstPlacerId = _firstPlacerId == 'player1' ? 'player2' : 'player1';
+    state.firstPlacerId = state.firstPlacerId == 'player1'
+        ? 'player2'
+        : 'player1';
+    state.currentPlacerId = state.firstPlacerId;
 
     state.currentPhase = GamePhase.draw;
     CardManager.drawCards(state.player1);
@@ -71,7 +77,7 @@ class GameEngine extends ChangeNotifier {
 
     // If NPC is supposed to place first this turn,
     // let them pick and place their cards *now*.
-    if (_firstPlacerId == 'player2') {
+    if (vsCpu && state.currentPlacerId == 'player2') {
       _playNpcTurn(); // NPC fills their lanes
       state.player2Ready = true;
     }
@@ -141,19 +147,45 @@ class GameEngine extends ChangeNotifier {
   bool confirmSelection(String playerId) {
     if (state.currentPhase != GamePhase.select) return false;
 
-    PlayerState player = playerId == 'player1' ? state.player1 : state.player2;
-
-    // if (player.selectedCards.isEmpty) return false;
-
-    if (playerId == 'player1') {
-      state.player1Ready = true;
-    } else {
-      state.player2Ready = true;
+    // In multiplayer: ignore confirms from the wrong player.
+    if (!vsCpu && playerId != state.currentPlacerId) {
+      return false;
     }
 
-    if (_firstPlacerId == 'player1' && !state.player2Ready) {
-      _playNpcTurn();
-      state.player2Ready = true;
+    if (vsCpu) {
+      // SINGLEPLAYER: human vs CPU
+      if (playerId == 'player1' && state.currentPlacerId == 'player1') {
+        state.player1Ready = true;
+        state.currentPlacerId = 'player2';
+      }
+
+      if (!state.player2Ready && state.currentPlacerId == 'player2') {
+        _playNpcTurn();
+        state.player2Ready = true;
+        // After NPC finishes, both should now be ready this round.
+      }
+    } else {
+      // MULTIPLAYER: human vs human
+
+      // First placer confirming: lock in their field and give the turn
+      // to the other player, but don't reveal yet.
+      if (playerId == state.firstPlacerId) {
+        if (playerId == 'player1') {
+          state.player1Ready = true;
+        } else {
+          state.player2Ready = true;
+        }
+
+        // Now the *other* player gets to place in response
+        state.currentPlacerId = (playerId == 'player1') ? 'player2' : 'player1';
+      } else {
+        // Second placer confirming: they’re done too
+        if (playerId == 'player1') {
+          state.player1Ready = true;
+        } else {
+          state.player2Ready = true;
+        }
+      }
     }
 
     // If both players ready, proceed to reveal/resolve
@@ -199,6 +231,8 @@ class GameEngine extends ChangeNotifier {
   }
 
   void _playNpcTurn() {
+    if (!vsCpu) return;
+
     final npc = state.player2;
     final random = Random();
 
@@ -238,5 +272,10 @@ class GameEngine extends ChangeNotifier {
   /// Reset game
   void reset() {
     initialize();
+  }
+
+  void loadFromState(GameState newState) {
+    state = newState;
+    notifyListeners();
   }
 }

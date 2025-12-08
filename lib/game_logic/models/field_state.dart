@@ -7,6 +7,8 @@ class FieldState {
   Card? center;
   Card? right;
 
+  FieldState({this.left, this.center, this.right});
+
   Card? cardInLane(Lane lane) {
     switch (lane) {
       case Lane.left:
@@ -38,5 +40,18 @@ class FieldState {
     left = null;
     center = null;
     right = null;
+  }
+
+  Map<String, dynamic> toJson() => {
+    'left': left?.toJson(),
+    'center': center?.toJson(),
+    'right': right?.toJson(),
+  };
+
+  factory FieldState.fromJson(Map<String, dynamic> json) {
+    return FieldState()
+      ..left = json['left'] != null ? Card.fromJson(json['left']) : null
+      ..center = json['center'] != null ? Card.fromJson(json['center']) : null
+      ..right = json['right'] != null ? Card.fromJson(json['right']) : null;
   }
 }

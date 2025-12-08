@@ -2,29 +2,24 @@ import 'package:flutter/material.dart';
 import '../game_logic/game_engine.dart';
 import '../audio/audio_controller.dart';
 import 'game_screen.dart';
+import 'multiplayer_lobby_screen.dart';
 
-enum GameMode {
-  singlePlayer,
-  multiplayer,
-}
+enum GameMode { singlePlayer, multiplayer }
 
 class MainMenu extends StatefulWidget {
   final GameEngine engine;
   final AudioController audio;
 
-  const MainMenu({
-    super.key,
-    required this.engine,
-    required this.audio,
-  });
+  const MainMenu({super.key, required this.engine, required this.audio});
 
   @override
   State<MainMenu> createState() => _MainMenuState();
 }
 
 class _MainMenuState extends State<MainMenu> {
-  final TextEditingController _playerNameController =
-  TextEditingController(text: 'Player');
+  final TextEditingController _playerNameController = TextEditingController(
+    text: 'Player',
+  );
 
   GameMode _mode = GameMode.singlePlayer;
 
@@ -40,24 +35,35 @@ class _MainMenuState extends State<MainMenu> {
         : _playerNameController.text.trim();
 
     // opponent name will auto to CPU if singleplayer is selected
-    final opponentName =
-    _mode == GameMode.singlePlayer ? 'CPU' : 'Player 2';
+    final opponentName = _mode == GameMode.singlePlayer ? 'CPU' : 'Player 2';
 
     // Initialize the engine with chosen names
     widget.engine.initialize(
       player1Name: playerName,
       player2Name: opponentName,
+      vsCpuOverride: false,
     );
 
-    // Go to the game screen
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => GameScreen(
-          engine: widget.engine,
-          audio: widget.audio,
+    if (_mode == GameMode.singlePlayer) {
+      // Local game
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) =>
+              GameScreen(engine: widget.engine, audio: widget.audio),
         ),
-      ),
-    );
+      );
+    } else {
+      // Multiplayer → go to lobby / room UI instead of straight to game
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => MultiplayerLobbyScreen(
+            engine: widget.engine,
+            audio: widget.audio,
+            playerName: playerName,
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -112,17 +118,15 @@ class _MainMenuState extends State<MainMenu> {
 
                     SizedBox(width: 12 * scale),
 
-                    // Multiplayer button (disabled for now until implemented)
+                    // Multiplayer button
                     ChoiceChip(
-                      label: const Text(
-                        'Multiplayer (WIP)',
-                      ),
-                      selected: false,
-                      onSelected: null, // disables interaction
-                      disabledColor: Colors.grey[800],
-                      labelStyle: TextStyle(
-                        color: Colors.grey[500],
-                      ),
+                      label: const Text('Multiplayer'),
+                      selected: _mode == GameMode.multiplayer,
+                      onSelected: (_) {
+                        setState(() {
+                          _mode = GameMode.multiplayer;
+                        });
+                      },
                     ),
                   ],
                 ),
@@ -131,9 +135,9 @@ class _MainMenuState extends State<MainMenu> {
 
                 // Player name input
                 Text(
-                  _mode == GameMode.singlePlayer
-                      ? 'Enter your name'
-                      : 'Enter Player 1 name',
+                  // _mode == GameMode.singlePlayer
+                  'Enter your name',
+                  // : 'Enter Player 1 name',
                   style: TextStyle(
                     fontSize: 16 * scale,
                     color: Colors.grey[300],
@@ -156,9 +160,7 @@ class _MainMenuState extends State<MainMenu> {
                   child: ElevatedButton(
                     onPressed: _startGame,
                     style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(
-                        vertical: 14 * scale,
-                      ),
+                      padding: EdgeInsets.symmetric(vertical: 14 * scale),
                     ),
                     child: Text(
                       'Start Game',
