@@ -54,6 +54,12 @@ class GameEngine extends ChangeNotifier {
     state.currentPhase = GamePhase.draw;
     CardManager.drawHand(state.player1);
     CardManager.drawHand(state.player2);
+
+    if (vsCpu) {
+      state.firstPlacerId = 'player1';
+      state.currentPlacerId = 'player1';
+    }
+
     state.currentPhase = GamePhase.select;
     state.player1Ready = false;
     state.player2Ready = false;
@@ -63,10 +69,15 @@ class GameEngine extends ChangeNotifier {
 
   /// Start a new turn (Draw Phase)
   void startTurn() {
-    state.firstPlacerId = state.firstPlacerId == 'player1'
-        ? 'player2'
-        : 'player1';
-    state.currentPlacerId = state.firstPlacerId;
+    if (vsCpu) {
+      state.firstPlacerId = 'player1';
+      state.currentPlacerId = 'player1';
+    } else {
+      state.firstPlacerId = state.firstPlacerId == 'player1'
+          ? 'player2'
+          : 'player1';
+      state.currentPlacerId = state.firstPlacerId;
+    }
 
     state.currentPhase = GamePhase.draw;
     CardManager.drawCards(state.player1);
@@ -77,7 +88,7 @@ class GameEngine extends ChangeNotifier {
 
     // If NPC is supposed to place first this turn,
     // let them pick and place their cards *now*.
-    if (vsCpu && state.currentPlacerId == 'player2') {
+    if (vsCpu && state.firstPlacerId == 'player2') {
       _playNpcTurn(); // NPC fills their lanes
       state.player2Ready = true;
     }
@@ -166,7 +177,7 @@ class GameEngine extends ChangeNotifier {
         // Proceed to reveal and resolve immediately
         state.currentPhase = GamePhase.reveal;
         notifyListeners();
-        Future.delayed(const Duration(milliseconds: 200), () {
+        Future.delayed(const Duration(seconds: 2), () {
           revealAndResolve();
         });
 

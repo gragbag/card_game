@@ -38,14 +38,14 @@ class _MainMenuState extends State<MainMenu> {
     final opponentName = _mode == GameMode.singlePlayer ? 'CPU' : 'Player 2';
 
     // Initialize the engine with chosen names
-    widget.engine.initialize(
-      player1Name: playerName,
-      player2Name: opponentName,
-      vsCpuOverride: false,
-    );
 
     if (_mode == GameMode.singlePlayer) {
       // Local game
+      widget.engine.initialize(
+        player1Name: playerName,
+        player2Name: opponentName,
+        vsCpuOverride: true,
+      );
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) =>
@@ -54,6 +54,11 @@ class _MainMenuState extends State<MainMenu> {
       );
     } else {
       // Multiplayer → go to lobby / room UI instead of straight to game
+      widget.engine.initialize(
+        player1Name: playerName,
+        player2Name: opponentName,
+        vsCpuOverride: false,
+      );
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => MultiplayerLobbyScreen(

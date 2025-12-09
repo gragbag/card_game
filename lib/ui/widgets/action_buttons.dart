@@ -42,20 +42,20 @@ class ActionButtons extends StatelessWidget {
             ),
           ),
 
-          SizedBox(
-            width: 120 * scale,
-            height: 45 * scale,
-            child: ElevatedButton(
-              onPressed: () {
-                engine.reset();
-                audio.playSound('assets/sounds/reset_card.mp3');
-              },
-              child: Text(
-                "Reset",
-                style: TextStyle(fontSize: 16 * scale),
-              ),
-            ),
-          ),
+          // SizedBox(
+          //   width: 120 * scale,
+          //   height: 45 * scale,
+          //   child: ElevatedButton(
+          //     onPressed: () {
+          //       engine.reset();
+          //       audio.playSound('assets/sounds/reset_card.mp3');
+          //     },
+          //     child: Text(
+          //       "Reset",
+          //       style: TextStyle(fontSize: 16 * scale),
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );
