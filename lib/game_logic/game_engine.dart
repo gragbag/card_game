@@ -156,13 +156,21 @@ class GameEngine extends ChangeNotifier {
       // SINGLEPLAYER: human vs CPU
       if (playerId == 'player1' && state.currentPlacerId == 'player1') {
         state.player1Ready = true;
-        state.currentPlacerId = 'player2';
-      }
 
-      if (!state.player2Ready && state.currentPlacerId == 'player2') {
+        // Immediately play CPU turn
         _playNpcTurn();
+
+        // Both players ready now
         state.player2Ready = true;
-        // After NPC finishes, both should now be ready this round.
+
+        // Proceed to reveal and resolve immediately
+        state.currentPhase = GamePhase.reveal;
+        notifyListeners();
+        Future.delayed(const Duration(milliseconds: 200), () {
+          revealAndResolve();
+        });
+
+        return true;
       }
     } else {
       // MULTIPLAYER: human vs human

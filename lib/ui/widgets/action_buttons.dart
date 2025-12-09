@@ -1,14 +1,12 @@
-import 'package:card_game/game_logic/services/combat_resolver.dart';
 import 'package:flutter/material.dart';
+import '../../game_logic/enums/game_phase.dart';
 import '../../game_logic/game_engine.dart';
 import 'package:card_game/audio/audio_controller.dart';
-import 'package:card_game/game_logic/enums/game_phase.dart';
 
 class ActionButtons extends StatelessWidget {
   final GameEngine engine;
   final AudioController audio;
   final double scale;
-
   final String localPlayerId;
 
   const ActionButtons({
@@ -52,7 +50,10 @@ class ActionButtons extends StatelessWidget {
                 engine.reset();
                 audio.playSound('assets/sounds/reset_card.mp3');
               },
-              child: Text("Reset", style: TextStyle(fontSize: 16 * scale)),
+              child: Text(
+                "Reset",
+                style: TextStyle(fontSize: 16 * scale),
+              ),
             ),
           ),
         ],

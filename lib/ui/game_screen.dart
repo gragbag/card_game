@@ -52,6 +52,15 @@ class _GameScreenState extends State<GameScreen> {
     if (_isOnline) {
       _setupOnlineSync();
     }
+
+    // Start music after first frame so SoLoud is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Only play if not muted
+      if (!widget.audio.isMuted) {
+        await widget.audio.startMusic();
+      }
+    });
+
   }
 
   void _setupOnlineSync() {
@@ -125,37 +134,69 @@ class _GameScreenState extends State<GameScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.only(top: 36 * scale),
-          child: Column(
-            children: [
-              PlayerArea(
-                player: opponent,
-                isOpponent: true,
-                engine: engine,
-                scale: scale,
-              ),
-              SizedBox(height: 10 * scale),
+        child: Stack(
+          children: [
 
-              GameBoard(
-                engine: engine,
-                scale: scale,
-                localPlayerId: localPlayerId,
-              ),
-              SizedBox(height: 10 * scale),
+            /// MAIN GAME UI
+            Padding(
+              padding: EdgeInsets.only(top: 36 * scale),
+              child: Column(
+                children: [
+                  PlayerArea(
+                    player: opponent,
+                    isOpponent: true,
+                    engine: engine,
+                    scale: scale,
+                  ),
+                  SizedBox(height: 10 * scale),
 
-              PlayerArea(player: player, engine: engine, scale: scale),
-              HandView(player: player, engine: engine, scale: scale),
-              ActionButtons(
-                engine: engine,
-                audio: widget.audio,
-                scale: scale,
-                localPlayerId: localPlayerId,
+                  GameBoard(
+                    engine: engine,
+                    scale: scale,
+                    localPlayerId: localPlayerId,
+                  ),
+                  SizedBox(height: 10 * scale),
+
+                  PlayerArea(
+                    player: player,
+                    engine: engine,
+                    scale: scale,
+                  ),
+                  HandView(
+                    player: player,
+                    engine: engine,
+                    scale: scale,
+                  ),
+                  ActionButtons(
+                    engine: engine,
+                    audio: widget.audio,
+                    scale: scale,
+                    localPlayerId: localPlayerId,
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+
+            //Mute Button
+            Positioned(
+              top: 8,
+              left: 8,
+              child: IconButton(
+                icon: Icon(
+                  widget.audio.isMuted ? Icons.volume_off : Icons.volume_up,
+                  size: 28,
+                  color: Colors.white,
+                ),
+                onPressed: () async {
+                  await widget.audio.toggleMute();
+                  setState(() {});
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
+
   }
 }

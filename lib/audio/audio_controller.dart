@@ -9,6 +9,8 @@ class AudioController {
 
   SoundHandle? _musicHandle;
 
+  bool isMuted = false;
+
   Future<void> initialize() async {
     _soloud = SoLoud.instance;
     await _soloud!.init();
@@ -18,7 +20,10 @@ class AudioController {
     _soloud?.deinit();
   }
 
+  // SOUND EFFECTS
   Future<void> playSound(String assetKey) async {
+    if (isMuted) return; // mute applies to sound FX too
+
     try {
       final source = await _soloud!.loadAsset(assetKey);
       await _soloud!.play(source);
@@ -27,21 +32,21 @@ class AudioController {
     }
   }
 
+  //  MUSIC PLAYBACK
   Future<void> startMusic() async {
-    if (_musicHandle != null) {
-      if (_soloud!.getIsValidVoiceHandle(_musicHandle!)) {
-        _log.info('Music is already playing. Stopping first.');
-        await _soloud!.stop(_musicHandle!);
-      }
+    if (_musicHandle != null &&
+        _soloud!.getIsValidVoiceHandle(_musicHandle!)) {
+      // If already playing or paused then do nothing
+      return;
     }
-    final musicSource = await _soloud!.loadAsset(
-      'assets/music/looped-song.ogg',
-      mode: LoadMode.disk,
 
+    final musicSource = await _soloud!.loadAsset(
+      'assets/music/background-music.mp3',
+      mode: LoadMode.disk,
     );
+
     musicSource.allInstancesFinished.first.then((_) {
       _soloud!.disposeSource(musicSource);
-      _log.info('Music source disposed');
       _musicHandle = null;
     });
 
@@ -54,16 +59,40 @@ class AudioController {
     );
   }
 
-  void fadeOutMusic() {
-    if (_musicHandle == null) {
-      _log.info('Nothing to fade out');
-      return;
+
+  //  MUTE / UNMUTE
+  Future<void> toggleMute() async {
+    isMuted = !isMuted;
+
+    if (_musicHandle == null) return; // nothing playing yet
+
+    const fadeDuration = Duration(seconds: 1); // 1-second fade
+
+    if (isMuted) {
+      _log.info("Muting audio (fade out)");
+      _soloud!.fadeVolume(_musicHandle!, 0, fadeDuration); // fade volume to 0
+      _soloud!.schedulePause(_musicHandle!, fadeDuration); // pause after fade
+    } else {
+      _log.info("Unmuting audio (fade in)");
+
+      // resume immediately at volume 0
+      _soloud!.setVolume(_musicHandle!, 0);
+      _soloud!.setPause(_musicHandle!, false);
+
+      // fade volume up to normal
+      _soloud!.fadeVolume(_musicHandle!, 0.3, fadeDuration);
     }
+  }
+
+
+
+
+  void fadeOutMusic() {
+    if (_musicHandle == null) return;
     const length = Duration(seconds: 5);
     _soloud!.fadeVolume(_musicHandle!, 0, length);
     _soloud!.scheduleStop(_musicHandle!, length);
   }
-
 
   void applyFilter() {
     _soloud!.filters.echoFilter.activate();
@@ -73,5 +102,4 @@ class AudioController {
   void removeFilter() {
     _soloud!.filters.echoFilter.deactivate();
   }
-
 }
