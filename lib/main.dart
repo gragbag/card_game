@@ -1,3 +1,5 @@
+//import 'package:video_player/video_player.dart';
+
 import 'game_logic/game_engine.dart';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -7,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'audio/audio_controller.dart';
 import 'ui/main_menu.dart';
+//import 'ui/intro_video.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,7 +51,9 @@ class CardBattleApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Card Battle Game',
       theme: ThemeData.dark(),
-      home: MainMenu(engine: engine, audio: audio),
+      home: MainMenu(engine: engine, audio: audio)
     );
   }
+
 }
+

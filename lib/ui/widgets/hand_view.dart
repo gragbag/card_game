@@ -23,7 +23,6 @@ class HandView extends StatefulWidget {
 class _HandViewState extends State<HandView> {
   @override
   Widget build(BuildContext context) {
-    final player = widget.player;
     final scale = widget.scale;
 
     return Center(

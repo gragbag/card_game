@@ -1,4 +1,4 @@
-import 'package:auto_size_text/auto_size_text.dart';
+//import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart' hide Card;
 import '../../game_logic/models/card.dart';
 import '../../game_logic/enums/card_type.dart';
@@ -34,7 +34,7 @@ class CardWidget extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: 8 * scale),
       padding: EdgeInsets.all(6 * scale),
       decoration: BoxDecoration(
-        color: _cardColor(card.type),
+        image: _cardImage(card.type),
         borderRadius: BorderRadius.circular(12 * scale),
         border: Border.all(
           color: selected ? Colors.yellow : Colors.white54,
@@ -46,7 +46,7 @@ class CardWidget extends StatelessWidget {
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+       /* children: [
           _buildName(scale),
 
           if (card.attack > 0)
@@ -64,16 +64,16 @@ class CardWidget extends StatelessWidget {
               'HEAL: ${card.heal}',
               style: TextStyle(color: Colors.white70, fontSize: 12 * scale),
             ),
-        ],
+        ], */
       ),
     );
   }
 
-  Widget _buildName(double scale) {
+ /* Widget _buildName(double scale) {
     final allowTwoLines = card.name.contains(' ');
 
     return AutoSizeText(
-      card.name,
+    card.name,
       textAlign: TextAlign.center,
       maxLines: allowTwoLines ? 2 : 1,
       minFontSize: 8 * scale,
@@ -85,7 +85,7 @@ class CardWidget extends StatelessWidget {
         color: Colors.white,
       ),
     );
-  }
+  } */
 
   void _showCardDetails(BuildContext context, Card card, double scale) {
     showModalBottomSheet(
@@ -104,7 +104,7 @@ class CardWidget extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+            /*children: [
               Text(
                 card.name,
                 style: TextStyle(
@@ -123,23 +123,23 @@ class CardWidget extends StatelessWidget {
                 card.description ?? 'No special effect.',
                 style: TextStyle(fontSize: descSize, color: Colors.white),
               ),
-            ],
+            ], */
           ),
         );
       },
     );
   }
 
-  Color _cardColor(CardType type) {
+  DecorationImage _cardImage(CardType type) {
     switch (type) {
       case CardType.damage:
-        return Colors.red.shade700;
+        return DecorationImage(image: AssetImage('assets/images/cards/rob.png'), fit: BoxFit.cover);
       case CardType.shield:
-        return Colors.blue.shade600;
+        return DecorationImage(image: AssetImage('assets/images/cards/haven.png'), fit: BoxFit.cover);
       case CardType.heal:
-        return Colors.green.shade600;
+        return DecorationImage(image: AssetImage('assets/images/cards/blue_energy.png'), fit: BoxFit.cover);
       case CardType.wild:
-        return Colors.purple.shade600;
+        return DecorationImage(image: AssetImage('assets/images/cards/wild.png'), fit: BoxFit.cover);
     }
   }
 }

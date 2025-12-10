@@ -1,11 +1,9 @@
 import '../enums/card_type.dart';
-import 'player_state.dart';
-import 'dart:math';
 
 class Card {
   final String id;
   final CardType type;
-  final String name;
+  //final String name;
 
   int attack; // for damage cards
   int defense; // for shield cards
@@ -15,42 +13,42 @@ class Card {
   final String? effectKey;
 
   /// Optional text shown in UI.
-  final String? description;
+ // final String? description;
 
   Card({
     required this.id,
     required this.type,
-    required this.name,
+   // required this.name,
     this.attack = 0,
     this.defense = 0,
     this.heal = 0,
     this.effectKey,
-    this.description,
+    //this.description,
   });
 
   Map<String, dynamic> toJson() => {
     'id': id,
     'type': type.name,
-    'name': name,
+   // 'name': name,
     'attack': attack,
     'defense': defense,
     'heal': heal,
     'effectKey': effectKey,
-    'description': description,
+   // 'description': description,
   };
 
   factory Card.fromJson(Map<String, dynamic> json) => Card(
     id: json['id'],
     type: CardType.values.firstWhere((e) => e.name == json['type']),
-    name: json['name'],
+   // name: json['name'],
     attack: json['attack'] ?? 0,
     defense: json['defense'] ?? 0,
     heal: json['heal'] ?? 0,
     effectKey: json['effectKey'],
-    description: json['description'],
+   // description: json['description'],
   );
 
   @override
   String toString() =>
-      'Card($name, $type, ATK:$attack DEF:$defense HEAL:$heal)';
+      'Card( $type, ATK:$attack DEF:$defense HEAL:$heal)'; //$name,
 }

@@ -33,12 +33,12 @@ class CardBlueprint {
     return Card(
       id: id,
       type: type,
-      name: name,
+     // name: name,
       attack: attack,
       defense: defense,
       heal: heal,
       effectKey: effectKey,
-      description: description,
+      //description: description,
     );
   }
 }
