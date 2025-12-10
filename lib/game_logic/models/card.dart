@@ -3,7 +3,7 @@ import '../enums/card_type.dart';
 class Card {
   final String id;
   final CardType type;
-  //final String name;
+  final String name;
 
   int attack; // for damage cards
   int defense; // for shield cards
@@ -18,7 +18,7 @@ class Card {
   Card({
     required this.id,
     required this.type,
-   // required this.name,
+   required this.name,
     this.attack = 0,
     this.defense = 0,
     this.heal = 0,
@@ -29,26 +29,26 @@ class Card {
   Map<String, dynamic> toJson() => {
     'id': id,
     'type': type.name,
-   // 'name': name,
+    'name': name,
     'attack': attack,
     'defense': defense,
     'heal': heal,
     'effectKey': effectKey,
-   // 'description': description,
+    //'description': description,
   };
 
   factory Card.fromJson(Map<String, dynamic> json) => Card(
     id: json['id'],
     type: CardType.values.firstWhere((e) => e.name == json['type']),
-   // name: json['name'],
+    name: json['name'],
     attack: json['attack'] ?? 0,
     defense: json['defense'] ?? 0,
     heal: json['heal'] ?? 0,
     effectKey: json['effectKey'],
-   // description: json['description'],
+    //description: json['description'],
   );
 
   @override
   String toString() =>
-      'Card( $type, ATK:$attack DEF:$defense HEAL:$heal)'; //$name,
+      'Card($name, $type, ATK:$attack DEF:$defense HEAL:$heal)';
 }

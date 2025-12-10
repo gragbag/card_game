@@ -29,11 +29,11 @@ class CardBlueprint {
   });
 
   /// Turn this blueprint into a concrete Card with a unique runtime id.
-  Card toCard(String id) {
+ Card toCard(String id) {
     return Card(
       id: id,
       type: type,
-     // name: name,
+     name: name,
       attack: attack,
       defense: defense,
       heal: heal,

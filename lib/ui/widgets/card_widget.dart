@@ -46,30 +46,30 @@ class CardWidget extends StatelessWidget {
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-       /* children: [
-          _buildName(scale),
+       children: [
+        // _buildName(scale),
 
           if (card.attack > 0)
             Text(
-              'ATK: ${card.attack}',
+              'ATTAK ${card.attack}',
               style: TextStyle(color: Colors.white70, fontSize: 12 * scale),
             ),
           if (card.defense > 0)
             Text(
-              'DEF: ${card.defense}',
+              'DEF ${card.defense}',
               style: TextStyle(color: Colors.white70, fontSize: 12 * scale),
             ),
           if (card.heal > 0)
             Text(
-              'HEAL: ${card.heal}',
+              'HEAL ${card.heal}',
               style: TextStyle(color: Colors.white70, fontSize: 12 * scale),
             ),
-        ], */
+        ],
       ),
     );
   }
 
- /* Widget _buildName(double scale) {
+  /*Widget _buildName(double scale) {
     final allowTwoLines = card.name.contains(' ');
 
     return AutoSizeText(
@@ -85,7 +85,7 @@ class CardWidget extends StatelessWidget {
         color: Colors.white,
       ),
     );
-  } */
+  }*/
 
   void _showCardDetails(BuildContext context, Card card, double scale) {
     showModalBottomSheet(
@@ -95,35 +95,22 @@ class CardWidget extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (ctx) {
-        final nameSize = 20 * scale;
+        //final nameSize = 20 * scale;
         final statSize = 14 * scale;
-        final descSize = 14 * scale;
+       // final descSize = 14 * scale;
 
         return Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
-            /*children: [
-              Text(
-                card.name,
-                style: TextStyle(
-                  fontSize: nameSize,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
+            children: [
               SizedBox(height: 12),
               Text(
-                'ATK: ${card.attack}   DEF: ${card.defense}   HEAL: ${card.heal}',
+                'ATTAK ${card.attack}   DEF ${card.defense}  HEAL ${card.heal}',
                 style: TextStyle(fontSize: statSize, color: Colors.white70),
               ),
-              SizedBox(height: 16),
-              Text(
-                card.description ?? 'No special effect.',
-                style: TextStyle(fontSize: descSize, color: Colors.white),
-              ),
-            ], */
+            ], 
           ),
         );
       },
